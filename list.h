@@ -26,13 +26,17 @@ struct __ListNode
     T data;     // 数据成员
 };
 
+template <typename T, typename Alloc> class list;
 
 // 迭代器类型
 // Ref和Ptr用来区分const_iterator和iterator
+// const_iterator无法赋值给iterator,如何实现?
 template<typename T, typename Ref, typename Ptr>
 class __ListIterator
 {
 public:
+    friend class list<T, std::allocator<T> >;
+
     typedef T value_type;
     typedef Ptr point;
     typedef Ref reference;
@@ -97,8 +101,8 @@ private:
     Node *pNode;    // 指向链表节点类型
 };
 
-
-template<typename T, typename Alloc=std::allocator<__ListNode<T> > >
+// 双向循环链表
+template<typename T, typename Alloc=std::allocator<T> >
 class list
 {
 public:
@@ -108,19 +112,53 @@ public:
     typedef T& reference;
     typedef const T& const_reference;
     typedef __ListNode<T> ListNode;
+    typedef list self;
 
     typedef __ListIterator<T, reference, point> iterator;
     typedef __ListIterator<T, const_reference, const_point> const_iterator;
     typedef reverse_iterator<const_iterator> const_reverse_iterator;
     typedef reverse_iterator<iterator> reverse_iterator;
 
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+
+    typedef std::allocator<ListNode> NodeAlloc;
+
+    /*  构造函数和析构函数 */
+    // 构造空列表
     list():endNode(nullptr) {
-        endNode = alloc.allocate(1);
+        endNode = NodeAlloc().allocate(1);
         endNode->next = endNode->prev = endNode;
     }
 
+    // 用一个initializer_list初始化改列表
     list(const std::initializer_list<T> &initList);
 
+    /*
+    list(const_iterator first, const_iterator last);
+
+    list(iterator first, iterator last);
+
+    list(const_point first, const_point last);
+    */
+
+    // 构造n个使用默认构造函数构造的元素的列表
+    list(size_type n);
+
+    // 元素为数值类型时,与模板类型的构造函数冲突,这个如何解决?
+    list(size_type n, const_reference data);
+
+    // 接收类迭代器对的构造函数
+    template<typename Iter>
+    list(Iter first, Iter last);
+
+    list(const self &right);
+
+    self& operator=(const self &right);
+
+    ~list();
+
+    /* 获取迭代器 */
     iterator begin() {
         return iterator(endNode->next);
     }
@@ -153,32 +191,66 @@ public:
         return const_reverse_iterator(cbegin());
     }
 
-    ~list();
-
-public:
     bool empty() const {
         return endNode->prev == endNode->next;
     }
 
+    size_type size() const {
+        return distance(this->cbegin(), this->cend());
+    }
+
+    size_type max_size() {
+        return size_type(-1);
+    }
+
+    // 清空列表
+    void clear();
+
+    // 在指定迭代器前插入元素,返回新插入的迭代器
+    iterator insert(iterator it, const_reference data=value_type());
+
+    // 同理,元素为整数类型时以下两个会有冲突,如何解决?
+    // 在指定迭代器前插入n个元素,返回插入的最左的元素的迭代器
+    iterator insert(iterator it, size_type n, const_reference data=value_type());
+
+    // 将迭代器范围内的元素插入到指定迭代器前,返回插入的最左的元素的迭代器
+    template<typename Iter>
+    iterator insert(iterator it, Iter first, Iter last);
+
+    void push_back(const_reference data);
+
+    void push_front(const_reference data);
+
+    iterator erase(iterator it);
+
+    iterator erase(iterator first, iterator last);
+
+    void pop_back();
+
+    void pop_front();
+
 private:
     ListNode *endNode;
 
-    Alloc alloc;        // 分配器
-};
+private:
+    // 构造一个节点
+    ListNode* createNode(const_reference data) {
+        ListNode *node = NodeAlloc().allocate(1);
+        Alloc().construct(&node->data, data);
+        return node;
+    }
 
+    // 求两个迭代器之间的距离
+    size_type distance(const_iterator b, const_iterator e) const;
+
+    ListNode* insert(ListNode *node, const_reference data);
+};
 
 template<typename T, typename Alloc >
 list<T, Alloc>::~list()
 {
-    ListNode *head = endNode->next;
-    while (head != endNode) {
-        ListNode *tmp = head;
-        head = head->next;
-        alloc.destroy(tmp);
-        alloc.deallocate(tmp, 1);
-    }
-    alloc.destroy(endNode);
-    alloc.deallocate(endNode, 1);
+    clear();
+    NodeAlloc().deallocate(endNode, 1);
 #ifdef DEBUG
     std::cout << "~list()" << std::endl;
 #endif
@@ -186,17 +258,220 @@ list<T, Alloc>::~list()
 
 template<typename T, typename Alloc>
 list<T, Alloc>::list(const std::initializer_list<T> &initList)
-    :list()
+    : list()
 {
     for (auto &item : initList) {
-        ListNode *node = alloc.allocate(1);
-        node->data = item;
+        ListNode *node = createNode(item);
         ListNode *tail = endNode->prev;
         node->next = endNode;
         node->prev = tail;
         endNode->prev = node;
         tail->next = node;
     }
+}
+
+/*
+template<typename T, typename Alloc>
+list<T, Alloc>::list(const_iterator first, const_iterator last)
+    : list()
+{
+    const_iterator it = first;
+    while (it != last) {
+        insert(end(), *it++);
+    }
+}
+
+template<typename T, typename Alloc>
+list<T, Alloc>::list(iterator first, iterator last)
+    : list()
+{
+    iterator it = first;
+    while (it != last) {
+        insert(end(), *it++);
+    }
+}
+
+template<typename T, typename Alloc>
+list<T, Alloc>::list(const_point first, const_point last)
+    : list()
+{
+    const_point p = first;
+    while (p != last) {
+        insert(end(), *p++);
+    }
+}
+*/
+
+template<typename T, typename Alloc>
+list<T, Alloc>::list(size_type n, const_reference data)
+    : list()
+{
+    while (n--) {
+        insert(end(), data);
+    }
+}
+
+template<typename T, typename Alloc>
+list<T, Alloc>::list(size_type n)
+        : list()
+{
+    while (n--) {
+        insert(end(), T());
+    }
+}
+
+template<typename T, typename Alloc>
+template<typename Iter>
+list<T, Alloc>::list(Iter first, Iter last)
+    : list()
+{
+    Iter it = first;
+    while (it != last) {
+        insert(end(), *it++);
+    }
+}
+
+template<typename T, typename Alloc>
+list<T, Alloc>::list(const self &right)
+    : list()
+{
+    const_iterator it = right.cbegin();
+    while (it != right.cend()) {
+        insert(end(), *it++);
+    }
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::self& list<T, Alloc>::operator=(const self &right)
+{
+    ListNode *currNode = right.endNode->next;
+    ListNode *newEndNode = NodeAlloc().allocate(1);
+    ListNode *prevNode = newEndNode;
+
+    while (currNode != right.endNode) {
+        ListNode *node = createNode(currNode->data);
+        prevNode->next = node;
+        node->prev = prevNode;
+        prevNode = node;
+        currNode = currNode->next;
+    }
+    prevNode->next = newEndNode;
+    newEndNode->prev = prevNode;
+    clear();
+    NodeAlloc().deallocate(endNode, 1);
+    endNode = newEndNode;
+    return *this;
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::clear()
+{
+    ListNode *head = endNode->next;
+    while (head != endNode) {
+        ListNode *tmp = head;
+        head = head->next;
+        NodeAlloc().destroy(tmp);
+        NodeAlloc().deallocate(tmp, 1);
+    }
+    endNode->next = endNode->prev = endNode;
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::ListNode* list<T, Alloc>::insert(ListNode *node, const_reference data)
+{
+    ListNode *newNode = createNode(data);
+    newNode->next = node;
+    newNode->prev = node->prev;
+    node->prev->next = newNode;
+    node->prev = newNode;
+    return newNode;
+}
+
+// 返回值类型为类内的typedef时,需要加typename
+template<typename T, typename Alloc>
+typename list<T, Alloc>::iterator list<T, Alloc>::insert(iterator it, const_reference data)
+{
+    return iterator(insert(it.pNode, data));
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::iterator list<T, Alloc>::insert(iterator it, size_type n, const_reference data)
+{
+    while (n--) {
+        it = insert(it, data);
+    }
+    return it;
+}
+
+template<typename T, typename Alloc>
+template<typename Iter>
+typename list<T, Alloc>::iterator list<T, Alloc>::insert(iterator it, Iter first, Iter last)
+{
+    while (first != last) {
+        it = insert(it, *first++);
+    }
+    return it;
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::size_type list<T, Alloc>::distance(const_iterator b, const_iterator e) const
+{
+    const_iterator it = b;
+    size_type dis = 0;
+    while (it != e) {
+        ++it;
+        ++dis;
+    }
+    return dis;
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::push_back(const_reference data)
+{
+    insert(end(), data);
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::push_front(const_reference data)
+{
+    insert(begin(), data);
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::iterator list<T, Alloc>::erase(iterator it)
+{
+    if (it == end()) {
+        return it;
+    }
+    iterator ret = it;
+    ++ret;
+    ListNode *node = it.pNode;
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+    Alloc().destroy(&node->data);
+    NodeAlloc().deallocate(node, 1);
+    return ret;
+}
+
+template<typename T, typename Alloc>
+typename list<T, Alloc>::iterator list<T, Alloc>::erase(iterator first, iterator last)
+{
+    while (first != last) {
+        erase(first++);
+    }
+    return last;
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::pop_back()
+{
+    erase(--end());
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::pop_front()
+{
+    erase(begin());
 }
 
 }
