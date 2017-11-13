@@ -106,6 +106,10 @@ template<typename T, typename Alloc=std::allocator<T> >
 class list
 {
 public:
+
+    template<typename _T, typename _Alloc>
+    friend std::ostream& operator<<(std::ostream &out, const list<_T, _Alloc> &l);
+
     typedef T value_type;
     typedef T* point;
     typedef const T* const_point;
@@ -229,6 +233,22 @@ public:
 
     void pop_front();
 
+    reference front() {
+        return *begin();
+    }
+
+    const_reference front() const {
+        return *cbegin();
+    }
+
+    reference back() {
+        return *(--end());
+    }
+
+    const_reference back() const {
+        return *(--cend());
+    }
+
 private:
     ListNode *endNode;
 
@@ -251,9 +271,6 @@ list<T, Alloc>::~list()
 {
     clear();
     NodeAlloc().deallocate(endNode, 1);
-#ifdef DEBUG
-    std::cout << "~list()" << std::endl;
-#endif
 }
 
 template<typename T, typename Alloc>
@@ -472,6 +489,21 @@ template<typename T, typename Alloc>
 void list<T, Alloc>::pop_front()
 {
     erase(begin());
+}
+
+template<typename T, typename Alloc>
+std::ostream& operator<<(std::ostream &out, const list<T, Alloc> &l)
+{
+    out << "(";
+    auto it = l.cbegin();
+    if (it != l.cend()) {
+        out << *it++;
+    }
+    while (it != l.cend()) {
+        out << ", " << *it++;
+    }
+    out << ")";
+    return out;
 }
 
 }
