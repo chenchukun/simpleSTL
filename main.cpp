@@ -4,87 +4,95 @@
 #include "list.h"
 using namespace std;
 
-int main() {
-    sstl::list<int> l({1, 2});
-    cout << l.empty() << endl;
-    cout << l.size() << endl;
-    if (l.begin() == l.end()) {
-        cout << "empty" << endl;
-    }
-    l.insert(l.begin(), 0);
+void testConstruct()
+{
+    cout << "----------testConstruct----------" << endl;
+    sstl::list<int> l({1, 2,3});
+    cout << "l = " << l << endl;
 
+    sstl::list<int> l1;
+    cout << "l1 = " << l1 << endl;
+
+    sstl::list<int> l2(3);
+    cout << "l2 = " << l2 << endl;
+
+    sstl::list<string> l3(10, "hello");
+    cout << "l3 = " << l3 << endl;
+
+    sstl::list<string> l4(l3.begin(), l3.end());
+    cout << "l4 = " << l4 << endl;
+
+    sstl::list<string> l5(l4);
+    cout << "l5 = " << l5 << endl;
+
+    sstl::list<string> l6(3, "hi");
+    l6 = l4;
+    cout << "l6 = " << l6 << endl;
+
+    cout << "l6.size() = " << l6.size() << endl;
+    cout << "l6.max_size() = " << l6.max_size() << endl;
+    cout << "l6.empty() = " << l6.empty() << endl;
+
+    l6.clear();
+    cout << "l6.clear()" << endl;
+    cout << "l6.size() = " << l6.size() << endl;
+    cout << "l6.max_size() = " << l6.max_size() << endl;
+    cout << "l6.empty() = " << l6.empty() << endl;
+}
+
+void testIterator()
+{
+    cout << "----------testIterator----------" << endl;
+    sstl::list<int> l({1, 2, 3, 4, 5});
     auto it = l.begin();
     while (it != l.end()) {
-        cout << *it << endl;
-        ++it;
+        cout << *it++ << endl;
     }
-    l.clear();
-    cout << l.size() << endl;
-    l.insert(l.begin(), 0);
-    l.insert(l.end(), 1);
-    it = l.begin();
-    while (it != l.end()) {
-        cout << *it << endl;
-        ++it;
-    }
+}
 
-    sstl::list<int> ll(l.begin(), l.end());
-    it = ll.begin();
-    while (it != ll.end()) {
-        cout << *it << endl;
-        ++it;
-    }
+void testInsert()
+{
+    cout << "----------testInsert----------" << endl;
+    sstl::list<int> l({1, 2, 3, 4, 5});
+    cout << "l = " << l << endl;
+    auto it = l.begin();
+    it = l.insert(it, 0);
+    cout << "l = " << l << endl;
+    ++it; ++it;
+    l.insert(it, 0);
+    cout << "l = " << l << endl;
+    l.insert(l.end(), 6);
+    cout << "l = " << l << endl;
 
-    int arr[5] = {10, 20, 30, 40, 50};
-    sstl::list<int> lll(begin(arr), end(arr));
-    it = lll.begin();
-    while (it != lll.end()) {
-        cout << *it << endl;
-        ++it;
-    }
+    sstl::list<string> sl(1, "world");
+    cout << "sl = " << sl << endl;
+    sl.insert(sl.begin(), 1, "hello");
+    cout << "sl = " << sl << endl;
+    std::list<string> stdl(2, "!");
+    sl.insert(sl.end(), stdl.begin(), stdl.end());
+    cout << "sl = " << sl << endl;
+    sl.pop_back();
+    cout << "sl = " << sl << endl;
+    sl.push_back("!");
+    cout << "sl = " << sl << endl;
+    sl.push_front("hi");
+    cout << "sl = " << sl << endl;
+    sl.erase(sl.begin());
+    cout << "sl = " << sl << endl;
+    sl.erase(--sl.end());
+    cout << "sl = " << sl << endl;
+    sl.insert(++sl.begin(), 2, "test");
+    cout << "sl = " << sl << endl;
+    auto sit = ++sl.begin();
+    auto eit = sit; ++eit; ++eit;
+    sl.erase(sit, eit);
+    cout << "sl = " << sl << endl;
+}
 
-    std::list<int> sl = {100, 200, 300};
-    sstl::list<int> llll(sl.cbegin(), sl.cend());
-    it = llll.begin();
-    while (it != llll.end()) {
-        cout << *it << endl;
-        ++it;
-    }
-
-    sstl::list<int> lllll(3);
-    auto dit = lllll.begin();
-    while (dit != lllll.end()) {
-        cout << *dit << endl;
-        ++dit;
-    }
-
-    sstl::list<int> il = llll;
-    auto iit = il.begin();
-    while (iit != il.end()) {
-        cout << *iit << endl;
-        ++iit;
-    }
-
-    il = lllll;
-    iit = il.insert(il.begin(), begin(arr), end(arr));
-    cout << *iit << endl;
-    iit = il.begin();
-    il.erase(++iit);
-    iit = il.begin();
-    while (iit != il.end()) {
-        cout << *iit << endl;
-        ++iit;
-    }
-
-    iit = il.begin();
-    auto iiit = ++iit;
-    ++iit;
-    il.erase(iit, iiit);
-    iit = il.begin();
-    while (iit != il.end()) {
-        cout << *iit << endl;
-        ++iit;
-    }
-
+int main()
+{
+    testConstruct();
+    testIterator();
+    testInsert();
     return 0;
 }
