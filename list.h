@@ -127,6 +127,7 @@ public:
     typedef ptrdiff_t difference_type;
 
     typedef std::allocator<ListNode> NodeAlloc;
+    typedef Alloc allocator_type;
 
     /*  构造函数和析构函数 */
     // 构造空列表
@@ -161,6 +162,10 @@ public:
     self& operator=(const self &right);
 
     ~list();
+
+    allocator_type get_allocator() const {
+        return Alloc();
+    }
 
     /* 获取迭代器 */
     iterator begin() {
@@ -248,6 +253,28 @@ public:
     const_reference back() const {
         return *(--cend());
     }
+
+    // 将first和last指定的迭代器返回的节点移动到it迭代器前
+    void transfer(iterator it, iterator first, iterator last);
+
+    // 将列表归并到当前列表
+    template <typename Compare>
+    void merge(list &sl, Compare comp);
+
+    // 删除元素值等于value的节点
+    void remove(const_reference value);
+
+    // 删除符合指定谓词的节点
+    template<typename Predicate>
+    void remove_if(Predicate pred);
+
+    template <typename Compare>
+    void sort();
+
+    void swap(list& l);
+
+    template <class BinaryPredicate>
+    void unique(BinaryPredicate binaryPred);
 
 private:
     ListNode *endNode;
@@ -504,6 +531,110 @@ std::ostream& operator<<(std::ostream &out, const list<T, Alloc> &l)
     }
     out << ")";
     return out;
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::transfer(iterator it, iterator first, iterator last)
+{
+    ListNode *node = it.pNode;
+    while (first != last) {
+        ListNode *insNode = first.pNode;
+        ++first;
+        insNode->next = node;
+        insNode->prev = node->prev;
+        node->prev->next = node;
+        node->prev = node;
+    }
+}
+
+template<typename T, typename Alloc>
+template <typename Compare>             // 必须放在第二行
+void list<T, Alloc>::merge(list &sl, Compare comp)
+{
+    iterator dfirst = begin();
+    iterator dlast = end();
+    iterator sfirst = begin();
+    iterator slast = end();
+    // 同一个列表,不进行合并
+    if (dfirst == sfirst) {
+        return ;
+    }
+    while (dfirst != dlast && sfirst != slast) {
+        if (comp(*dfirst, *sfirst)) {
+            ++dfirst;
+        }
+        else {
+            iterator next = sfirst;
+            transfer(dfirst, sfirst, ++next);
+            sfirst = next;
+        }
+    }
+    if (sfirst != slast) {
+        transfer(dlast, sfirst, slast);
+    }
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::remove(const_reference value)
+{
+    iterator it = begin();
+    while (it != end()) {
+        iterator curr = it;
+        ++it;
+        if (*curr == value) {
+            curr->prev->next = curr->next;
+            curr->next->prev = curr->prev;
+            Alloc().destroy(&curr.pNode->data);
+            NodeAlloc().deallocate(curr.pNode, 1);
+        }
+    }
+}
+
+template<typename T, typename Alloc>
+template<typename Predicate>
+void list<T, Alloc>::remove_if(Predicate pred)
+{
+    iterator it = begin();
+    while (it != end()) {
+        iterator curr = it;
+        ++it;
+        if (pred(*curr)) {
+            curr->prev->next = curr->next;
+            curr->next->prev = curr->prev;
+            Alloc().destroy(&curr.pNode->data);
+            NodeAlloc().deallocate(curr.pNode, 1);
+        }
+    }
+}
+
+template<typename T, typename Alloc>
+template <typename Compare>
+void list<T, Alloc>::sort()
+{
+
+}
+
+template<typename T, typename Alloc>
+void list<T, Alloc>::swap(list& l)
+{
+    ListNode *node = l.endNode;
+    l.endNode = endNode;
+    endNode = node;
+}
+
+template<typename T, typename Alloc>
+template <class BinaryPredicate>
+void list<T, Alloc>::unique(BinaryPredicate binaryPred)
+{
+    iterator prev = begin();
+    iterator curr = prev;
+    ++curr;
+    while (curr != end()) {
+        iterator del = curr++;
+        if (binaryPred(*prev, *del)) {
+            erase(del);
+        }
+    }
 }
 
 }
