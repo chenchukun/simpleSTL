@@ -268,8 +268,10 @@ public:
     template<typename Predicate>
     void remove_if(Predicate pred);
 
-    template <typename Compare>
     void sort();
+
+    template <typename Compare>
+    void sort(Compare comp);
 
     void swap(list& l);
 
@@ -291,6 +293,9 @@ private:
     size_type distance(const_iterator b, const_iterator e) const;
 
     ListNode* insert(ListNode *node, const_reference data);
+
+    template <typename Compare>
+    void sortImpl(ListNode *first, ListNode *last, Compare comp);
 };
 
 template<typename T, typename Alloc >
@@ -609,9 +614,43 @@ void list<T, Alloc>::remove_if(Predicate pred)
 
 template<typename T, typename Alloc>
 template <typename Compare>
+void list<T, Alloc>::sortImpl(ListNode *first, ListNode *last, Compare comp)
+{
+    self newList;
+    while (!empty()) {
+
+    }
+}
+
+template<typename T, typename Alloc>
+template <typename Compare>
+void list<T, Alloc>::sort(Compare comp)
+{
+    if (size() > 1) {
+        self newList;
+        while (!empty()) {
+            ListNode *curr = begin().pNode;
+            ListNode *first = curr->next;
+            while (first != end().pNode) {
+                if (comp(first->data, curr->data)) {
+                    curr = first;
+                }
+                first = first->next;
+            }
+            iterator _fist;
+            _fist.pNode = curr;
+            iterator _last;
+            _last.pNode = curr->next;
+            newList.transfer(newList.end(), _fist, _last);
+        }
+        swap(newList);
+    }
+}
+
+template<typename T, typename Alloc>
 void list<T, Alloc>::sort()
 {
-
+    sort([](const_reference left, const_reference right) {return left<right;});
 }
 
 template<typename T, typename Alloc>

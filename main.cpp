@@ -87,6 +87,11 @@ void testInsert()
     auto eit = sit; ++eit; ++eit;
     sl.erase(sit, eit);
     cout << "sl = " << sl << endl;
+
+    sstl::list<int> li({4, 1, 8, 3, 5, 9, 6});
+    cout << "li = " << li << endl;
+    li.sort();
+    cout << "li = " << li << endl;
 }
 
 int main()
