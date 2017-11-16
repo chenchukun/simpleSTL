@@ -230,8 +230,10 @@ public:
 
     void push_front(const_reference data);
 
+    // 删除指定迭代器元素,返回下一个迭代器
     iterator erase(iterator it);
 
+    // 删除指定迭代器对间元素,返回last
     iterator erase(iterator first, iterator last);
 
     void pop_back();
@@ -277,6 +279,8 @@ public:
 
     template <class BinaryPredicate>
     void unique(BinaryPredicate binaryPred);
+
+    void unique();
 
 private:
     ListNode *endNode;
@@ -545,10 +549,12 @@ void list<T, Alloc>::transfer(iterator it, iterator first, iterator last)
     while (first != last) {
         ListNode *insNode = first.pNode;
         ++first;
+        insNode->next->prev = insNode->prev;
+        insNode->prev->next = insNode->next;
         insNode->next = node;
         insNode->prev = node->prev;
-        node->prev->next = node;
-        node->prev = node;
+        node->prev->next = insNode;
+        node->prev = insNode;
     }
 }
 
@@ -558,8 +564,8 @@ void list<T, Alloc>::merge(list &sl, Compare comp)
 {
     iterator dfirst = begin();
     iterator dlast = end();
-    iterator sfirst = begin();
-    iterator slast = end();
+    iterator sfirst = sl.begin();
+    iterator slast = sl.end();
     // 同一个列表,不进行合并
     if (dfirst == sfirst) {
         return ;
@@ -582,6 +588,8 @@ void list<T, Alloc>::merge(list &sl, Compare comp)
 template<typename T, typename Alloc>
 void list<T, Alloc>::remove(const_reference value)
 {
+    remove_if([value](const_reference _value) {return value==_value;});
+    /*
     iterator it = begin();
     while (it != end()) {
         iterator curr = it;
@@ -593,6 +601,7 @@ void list<T, Alloc>::remove(const_reference value)
             NodeAlloc().deallocate(curr.pNode, 1);
         }
     }
+     */
 }
 
 template<typename T, typename Alloc>
@@ -604,8 +613,8 @@ void list<T, Alloc>::remove_if(Predicate pred)
         iterator curr = it;
         ++it;
         if (pred(*curr)) {
-            curr->prev->next = curr->next;
-            curr->next->prev = curr->prev;
+            curr.pNode->prev->next = curr.pNode->next;
+            curr.pNode->next->prev = curr.pNode->prev;
             Alloc().destroy(&curr.pNode->data);
             NodeAlloc().deallocate(curr.pNode, 1);
         }
@@ -671,12 +680,22 @@ void list<T, Alloc>::unique(BinaryPredicate binaryPred)
     while (curr != end()) {
         iterator del = curr++;
         if (binaryPred(*prev, *del)) {
+            prev = del;
+            --prev;
             erase(del);
+        }
+        else {
+            prev = del;
         }
     }
 }
 
+template<typename T, typename Alloc>
+void list<T, Alloc>::unique()
+{
+    unique([](const_reference x, const_reference y){return x==y;});
 }
 
+}
 
 #endif //SIMPLESTL_LIST_H
