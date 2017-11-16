@@ -86,12 +86,59 @@ void testInsert()
     auto sit = ++sl.begin();
     auto eit = sit; ++eit; ++eit;
     sl.erase(sit, eit);
+    sl.back() = "...";
     cout << "sl = " << sl << endl;
+    cout << "sl.back() = " << sl.back() << endl;
+    cout << "sl.front() = " << sl.front() << endl;
+}
 
-    sstl::list<int> li({4, 1, 8, 3, 5, 9, 6});
-    cout << "li = " << li << endl;
-    li.sort();
-    cout << "li = " << li << endl;
+void testMove()
+{
+    cout << "----------testMove----------" << endl;
+    sstl::list<int> l1({1, 2, 3, 4, 5});
+    cout << "l1" << l1 << endl;
+    l1.transfer(l1.begin(), --l1.end(), l1.end());
+    cout << "l1" << l1 << endl;
+    l1.pop_back();
+    l1.pop_back();
+    cout << "l1" << l1 << endl;
+    l1.transfer(l1.begin(), --l1.end(), l1.end());
+    cout << "l1" << l1 << endl;
+
+    sstl::list<int> l2;
+    cout << "l1" << l1 << endl;
+    cout << "l2" << l2 << endl;
+    l2.transfer(l2.begin(), --l1.end(), l1.end());
+    cout << "l1" << l1 << endl;
+    cout << "l2" << l2 << endl;
+    l2.transfer(l2.begin(), l1.begin(), l1.end());
+    cout << "l1" << l1 << endl;
+    cout << "l2" << l2 << endl;
+    l2.remove(2);
+    cout << "l2" << l2 << endl;
+    l2 = sstl::list<int>({1, 2, 2, 3, 3, 4, 4, 5, 5});
+    cout << "l2" << l2 << endl;
+    l2.remove(3);
+    cout << "l2" << l2 << endl;
+    l2.remove_if([](int x){return x>=4;});
+    cout << "l2" << l2 << endl;
+
+    sstl::list<int> l3({2, 4, 5});
+    cout << "l3" << l3 << endl;
+    l3.merge(l2, [](int x, int y){return x<y;});
+    cout << "l2" << l2 << endl;
+    cout << "l3" << l3 << endl;
+    l2.swap(l3);
+    cout << "l2" << l2 << endl;
+    cout << "l3" << l3 << endl;
+    l2.unique();
+    cout << "l2" << l2 << endl;
+
+    sstl::list<int> l4({4, 1, 9, 7, 1, 2, 0, 7});
+    l4.sort();
+    cout << "l4" << l4 << endl;
+    l4.sort([](int x, int y){return x>y;});
+    cout << "l4" << l4 << endl;
 }
 
 int main()
@@ -99,5 +146,6 @@ int main()
     testConstruct();
     testIterator();
     testInsert();
+    testMove();
     return 0;
 }
