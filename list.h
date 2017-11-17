@@ -8,13 +8,14 @@
 #include <memory>
 #include <initializer_list>
 #include "reverse_iterator.h"
+#include "utility.h"
 
 #ifdef DEBUG
     #include <iostream>
 #endif
 
-namespace sstl
-{
+NAMESPACE_START
+
 
 // 节点类型
 template<typename T>
@@ -696,6 +697,6 @@ void list<T, Alloc>::unique()
     unique([](const_reference x, const_reference y){return x==y;});
 }
 
-}
+NAMESPACE_END
 
 #endif //SIMPLESTL_LIST_H

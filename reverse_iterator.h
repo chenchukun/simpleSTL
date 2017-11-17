@@ -4,9 +4,9 @@
 
 #ifndef SIMPLESTL_REVERSE_ITERATOR_H
 #define SIMPLESTL_REVERSE_ITERATOR_H
+#include "utility.h"
 
-namespace sstl
-{
+NAMESPACE_START
 
 template<class Iterator>
 class reverse_iterator
@@ -18,7 +18,7 @@ private:
     Iterator iter;
 };
 
-}
+NAMESPACE_END
 
 
 #endif //SIMPLESTL_REVERSE_ITERATOR_H
