@@ -2,6 +2,7 @@
 #include <list>
 #include <string>
 #include "list.h"
+
 using namespace std;
 
 void testConstruct()
