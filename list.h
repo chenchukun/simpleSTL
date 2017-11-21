@@ -35,15 +35,19 @@ template <typename T, typename Alloc> class list;
 template<typename T, typename Ref, typename Ptr>
 class __ListIterator
 {
+// 迭代器必须定义的几种类型category、difference、value_type、reference、pointer。
+// 算法需要得到迭代器的这五种类型,可以通过TYPE::pointer获取,但是为了同时支持普通指针。
+// C++标准库引入iterator_traits,通过它来间接的获取这些类型,使用模板偏特化来支持普通指针。
 public:
     friend class list<T, std::allocator<T> >;
 
     typedef T value_type;
-    typedef Ptr point;
+    typedef Ptr pointer;
     typedef Ref reference;
     typedef __ListNode<T> Node;
     typedef __ListIterator self;
 
+//    typedef bidirectional_iterator_tag iterator_category;     什么类型?
     typedef size_t size_type;
     typedef ptrdiff_t difference_type;
 
@@ -94,7 +98,7 @@ public:
     }
 
     // const_iterator返回const T*, iterator返回T*
-    point operator->() const {
+    pointer operator->() const {
         return &(operator*());
     }
 
@@ -112,15 +116,15 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const list<_T, _Alloc> &l);
 
     typedef T value_type;
-    typedef T* point;
-    typedef const T* const_point;
+    typedef T* pointer;
+    typedef const T* const_pointer;
     typedef T& reference;
     typedef const T& const_reference;
     typedef __ListNode<T> ListNode;
     typedef list self;
 
-    typedef __ListIterator<T, reference, point> iterator;
-    typedef __ListIterator<T, const_reference, const_point> const_iterator;
+    typedef __ListIterator<T, reference, pointer> iterator;
+    typedef __ListIterator<T, const_reference, const_pointer> const_iterator;
     typedef reverse_iterator<const_iterator> const_reverse_iterator;
     typedef reverse_iterator<iterator> reverse_iterator;
 
@@ -145,7 +149,7 @@ public:
 
     list(iterator first, iterator last);
 
-    list(const_point first, const_point last);
+    list(const_pointer first, const_pointer last);
     */
 
     // 构造n个使用默认构造函数构造的元素的列表
@@ -346,10 +350,10 @@ list<T, Alloc>::list(iterator first, iterator last)
 }
 
 template<typename T, typename Alloc>
-list<T, Alloc>::list(const_point first, const_point last)
+list<T, Alloc>::list(const_pointer first, const_pointer last)
     : list()
 {
-    const_point p = first;
+    const_pointer p = first;
     while (p != last) {
         insert(end(), *p++);
     }
