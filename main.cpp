@@ -2,6 +2,7 @@
 #include <list>
 #include <string>
 #include "list.h"
+#include "vector.h"
 
 using namespace std;
 
@@ -142,11 +143,23 @@ void testMove()
     cout << "l4" << l4 << endl;
 }
 
-int main()
+void testList()
 {
     testConstruct();
     testIterator();
     testInsert();
     testMove();
+}
+
+void testVector()
+{
+    sstl::vector<int> v({1,2,3});
+    cout << v << endl;
+}
+
+int main()
+{
+//    testList();
+    testVector();
     return 0;
 }
