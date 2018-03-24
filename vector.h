@@ -71,6 +71,48 @@ public:
         return endOfStorage - start;
     }
 
+    void push_back(const_reference value);
+
+    void insert(iterator it, const_reference value);
+
+    template<typename Iter>
+    void insert(iterator it, Iter first, Iter last);
+
+    reference front() {
+        return *start;
+    }
+
+    const_reference front() const {
+        return *start;
+    }
+
+    reference back() {
+        return *(finish -1);
+    }
+
+    const_reference back() const {
+        return *(finish -1);
+    }
+
+    pointer begin() {
+        return start;
+    }
+
+    const_pointer begin() const {
+        return start;
+    }
+
+    pointer end() {
+        return finish;
+    }
+
+    const_pointer end() const {
+        return finish;
+    }
+
+private:
+    void move(iterator first, iterator last, iterator dst);
+
 private:
     pointer start;
     pointer finish;
@@ -164,8 +206,60 @@ std::ostream& operator<<(std::ostream &out, const vector<T, Alloc> &v)
     }
     out << ")";
     return out;
-};
+}
 
+template<typename T, typename Alloc>
+void vector<T, Alloc>::push_back(const_reference value)
+{
+    insert(end(), value);
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::insert(iterator it, const_reference value)
+{
+    insert(it, &value, (&value) + 1);
+}
+
+template<typename T, typename Alloc>
+template<typename Iter>
+void vector<T, Alloc>::insert(iterator it, Iter first, Iter last)
+{
+    size_t n = 0;
+    Iter tmpIt = first;
+    while (tmpIt != last) {
+        ++tmpIt;
+        ++n;
+    }
+    if (endOfStorage - finish >= n) {
+        // 直接插入
+        move(it, end(), it + n);
+        while (first != last) {
+            *it++ = *first++;
+        }
+        finish += n;
+    }
+    else {
+        size_t newCap = capacity() * 2;
+        pointer newMem = Alloc().allocate(newCap);
+        move(begin(), it, newMem);
+        pointer insIt = newMem + (it - begin());
+        while (first != last) {
+            *insIt++ = *first++;
+        }
+        move(it, end(), insIt);
+        finish = newMem + size() + n;
+        start = newMem;
+        endOfStorage = start + newCap;
+    }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::move(iterator first, iterator last, iterator dst)
+{
+    while (first != last) {
+        *dst++ = *first++;
+    }
+}
 
 NAMESPACE_END
 
