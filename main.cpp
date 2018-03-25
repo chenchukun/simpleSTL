@@ -153,7 +153,24 @@ void testList()
 
 void testVector()
 {
-    sstl::vector<int> v({1,2,3});
+    sstl::vector<int> v;
+    v.push_back(1);
+    v.insert(v.begin(), 0);
+    v.insert(v.begin(), -1);
+    v.insert(v.begin(), -2);
+    v.insert(v.begin(), -3);
+    v.insert(v.begin(), -4);
+    v.insert(v.begin(), -5);
+    v.insert(v.begin(), -6);
+    v.push_back(2);
+    v.push_back(3);
+    v.push_back(4);
+    v.push_back(5);
+    v.insert(v.end(), 6);
+    list<int> l({0, 0, 0, 0, 0});
+    v.insert(v.begin()+6, l.begin(), l.end());
+    cout << v << endl;
+    v.erase(v.begin() + 6);
     cout << v << endl;
 }
 

@@ -9,10 +9,10 @@
 NAMESPACE_START
 
 template<class Iterator>
-class reverse_iterator
+class reverse_iterator_impl
 {
 public:
-    reverse_iterator(Iterator it): iter(it) {}
+    reverse_iterator_impl(Iterator it): iter(it) {}
 
 private:
     Iterator iter;

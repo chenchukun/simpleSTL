@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <initializer_list>
+#include <cstddef>
 #include "reverse_iterator.h"
 #include "utility.h"
 
@@ -125,8 +126,8 @@ public:
 
     typedef __ListIterator<T, reference, pointer> iterator;
     typedef __ListIterator<T, const_reference, const_pointer> const_iterator;
-    typedef reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef reverse_iterator<iterator> reverse_iterator;
+    typedef reverse_iterator_impl<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator_impl<iterator> reverse_iterator;
 
     typedef size_t size_type;
     typedef ptrdiff_t difference_type;

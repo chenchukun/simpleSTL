@@ -7,6 +7,7 @@
 
 #include "utility.h"
 #include "reverse_iterator.h"
+#include <cstddef>
 #include <memory>
 #include <initializer_list>
 
@@ -31,8 +32,8 @@ public:
 
     typedef T* iterator;
     typedef const T* const_iterator;
-    typedef reverse_iterator<const_iterator> const_reverse_iterator;
-    typedef reverse_iterator<iterator> reverse_iterator;
+    typedef reverse_iterator_impl<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator_impl<iterator> reverse_iterator;
 
     vector():start(NULL),finish(NULL), endOfStorage(NULL) {}
     vector(size_type n, const_reference value);
@@ -73,6 +74,10 @@ public:
 
     void push_back(const_reference value);
 
+    void pop_back() {
+        --finish;
+    }
+
     void insert(iterator it, const_reference value);
 
     template<typename Iter>
@@ -109,6 +114,12 @@ public:
     const_pointer end() const {
         return finish;
     }
+
+    void erase(iterator it) {
+        erase(it, it + 1);
+    }
+
+    void erase(iterator first, iterator last);
 
 private:
     void move(iterator first, iterator last, iterator dst);
@@ -240,6 +251,12 @@ void vector<T, Alloc>::insert(iterator it, Iter first, Iter last)
     }
     else {
         size_t newCap = capacity() * 2;
+        if (capacity() == 0) {
+            newCap = n;
+        }
+        else if (size() + n > newCap) {
+            newCap = (size() + n) * 2;
+        }
         pointer newMem = Alloc().allocate(newCap);
         move(begin(), it, newMem);
         pointer insIt = newMem + (it - begin());
@@ -256,9 +273,29 @@ void vector<T, Alloc>::insert(iterator it, Iter first, Iter last)
 template<typename T, typename Alloc>
 void vector<T, Alloc>::move(iterator first, iterator last, iterator dst)
 {
-    while (first != last) {
-        *dst++ = *first++;
+    if (first >= dst) {
+        while (first != last) {
+            *dst++ = *first++;
+        }
     }
+    else {
+        dst += last - first;
+        while (first != last) {
+            *--dst = *--last;
+        }
+    }
+}
+
+template<typename T, typename Alloc>
+void vector<T, Alloc>::erase(iterator first, iterator last)
+{
+    move(last, end(), first);
+    size_t n = last - first;
+    first += n;
+    while (first != end()) {
+        Alloc().destroy(first++);
+    }
+    finish -= n;
 }
 
 NAMESPACE_END
