@@ -14,10 +14,10 @@ public:
     {
         T value;
         BinaryNode *left;
-        BinaryNode *rigth;
+        BinaryNode *right;
 
         BinaryNode(const T &v, BinaryNode *l=NULL, BinaryNode *r=NULL)
-                : value(v), left(l), rigth(r)
+                : value(v), left(l), right(r)
         {
         }
     };
@@ -61,7 +61,7 @@ public:
         return find(value) != NULL;
     }
 
-    std::string toString();
+    std::string toString() const;
 
     T findMax() const {
         return T();
@@ -117,7 +117,7 @@ typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::clone(Binar
 {
     BinaryNode *pNode = NULL;
     if (pRoot) {
-        pNode = new BinaryNode(pRoot->value, clone(pRoot->left), clone(pRoot->rigth));
+        pNode = new BinaryNode(pRoot->value, clone(pRoot->left), clone(pRoot->right));
     }
     return pNode;
 }
@@ -130,15 +130,15 @@ void BinarySearchTree<T, C>::remove(const T &value, BinaryNode *&pRoot)
             remove(value, pRoot->left);
         }
         else if (C()(pRoot->value, value)) {
-            remove(value, pRoot->rigth);
+            remove(value, pRoot->right);
         }
-        else if (pRoot->left && pRoot->rigth){
-            pRoot->value = findMin(pRoot->rigth)->value;
-            remove(pRoot->value, pRoot->rigth);
+        else if (pRoot->left && pRoot->right){
+            pRoot->value = findMin(pRoot->right)->value;
+            remove(pRoot->value, pRoot->right);
         }
         else {
             BinaryNode *pNode = pRoot;
-            pRoot = (pRoot->left)? pRoot->left: pRoot->rigth;
+            pRoot = (pRoot->left)? pRoot->left: pRoot->right;
             delete pNode;
         }
     }
@@ -153,7 +153,7 @@ const typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::find(
             pNode = find(value, pRoot->left);
         }
         else if (C()(pRoot->value, value)) {
-            pNode = find(value, pRoot->rigth);
+            pNode = find(value, pRoot->right);
         }
         else {
             pNode = pRoot;
@@ -171,7 +171,7 @@ typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::find(const 
             pNode = find(value, pRoot->left);
         }
         else if (C()(pRoot->value, value)) {
-            pNode = find(value, pRoot->rigth);
+            pNode = find(value, pRoot->right);
         }
         else {
             pNode = pRoot;
@@ -185,8 +185,8 @@ typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::findMax(Bin
 {
     BinaryNode *pNode = NULL;
     if (pRoot) {
-        if (pRoot->rigth) {
-            pNode = findMax(pRoot->rigth);
+        if (pRoot->right) {
+            pNode = findMax(pRoot->right);
         }
         else {
             pNode = pRoot;
@@ -215,7 +215,7 @@ void BinarySearchTree<T, C>::makeEmpty(BinaryNode *&pNode)
 {
     if (pNode != NULL) {
         makeEmpty(pNode->left);
-        makeEmpty(pNode->rigth);
+        makeEmpty(pNode->right);
         delete pNode;
         pNode = NULL;
     }
@@ -238,12 +238,12 @@ typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::insert(cons
         return insert(value, pRoot->left);
     }
     else {
-        return insert(value, pRoot->rigth);
+        return insert(value, pRoot->right);
     }
 }
 
 template<typename T, typename C>
-std::string BinarySearchTree<T, C>::toString()
+std::string BinarySearchTree<T, C>::toString() const
 {
     std::stringstream os;
     if (root_ != NULL)
@@ -257,8 +257,8 @@ std::string BinarySearchTree<T, C>::toString()
             if (pNode->left) {
                 que.push(pNode->left);
             }
-            if (pNode->rigth) {
-                que.push(pNode->rigth);
+            if (pNode->right) {
+                que.push(pNode->right);
             }
         }
     }
