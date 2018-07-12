@@ -64,11 +64,11 @@ public:
     std::string toString() const;
 
     T findMax() const {
-        return T();
+        return findMax(root_)->value;
     }
 
     T findMin() const {
-        return T();
+        return findMin(root_)->value;
     }
 
     void remove(const T &value) {
@@ -183,31 +183,19 @@ typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::find(const 
 template<typename T, typename C>
 typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::findMax(BinaryNode *pRoot) const
 {
-    BinaryNode *pNode = NULL;
-    if (pRoot) {
-        if (pRoot->right) {
-            pNode = findMax(pRoot->right);
-        }
-        else {
-            pNode = pRoot;
-        }
+    if (pRoot && pRoot->right) {
+        return findMax(pRoot->right);
     }
-    return pNode;
+    return pRoot;
 }
 
 template<typename T, typename C>
 typename BinarySearchTree<T, C>::BinaryNode* BinarySearchTree<T, C>::findMin(BinaryNode *pRoot) const
 {
-    BinaryNode *pNode = NULL;
-    if (pRoot) {
-        if (pRoot->left) {
-            pNode = findMin(pRoot->left);
-        }
-        else {
-            pNode = pRoot;
-        }
+    if (pRoot && pRoot->left) {
+        return findMin(pRoot->left);
     }
-    return pNode;
+    return pRoot;
 }
 
 template<typename T, typename C>

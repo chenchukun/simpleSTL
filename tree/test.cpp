@@ -23,6 +23,9 @@ void binary()
     cout << tree.toString() << endl;
     cout << tree.find(7)->value << endl;
 
+    cout << tree.findMax() << endl;
+    cout << tree.findMin() << endl;
+
     BinarySearchTree<int> tree2 = tree;
     cout << tree2.toString() << endl;
     BinarySearchTree<int> tree3;
@@ -41,6 +44,21 @@ void avl()
     tree.insert(0);
     tree.insert(23);
     tree.insert(18);
+    cout << tree.toString() << endl;
+    cout << (tree.find(5)->value) << endl;
+    cout << tree.findMax() << endl;
+    cout << tree.findMin() << endl;
+    tree.remove(6);
+    cout << tree.toString() << endl;
+    tree.remove(18);
+    cout << tree.toString() << endl;
+    tree.remove(15);
+    cout << tree.toString() << endl;
+    tree.remove(1);
+    cout << tree.toString() << endl;
+    tree.remove(23);
+    cout << tree.toString() << endl;
+
 }
 
 int main()
